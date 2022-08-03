@@ -1,2 +1,5 @@
-env/
 .idea
+__pycache__/
+.gitignore
+*.pyc
+.DS_Store%
