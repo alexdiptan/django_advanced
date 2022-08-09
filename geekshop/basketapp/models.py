@@ -4,33 +4,32 @@ from django.db import models
 from mainapp.models import Product
 
 
-class BasketManager(models.Manager):
-    def total_quantity(self):
-        basket_items = self.all()
-        return sum(item.quantity for item in basket_items)
-
-    def total_cost(self):
-        basket_items = self.all()
-        return sum(item.cost for item in basket_items)
-
-
 class Basket(models.Model):
-    class Meta:
-        ordering = ("id",)
-        unique_together = ("user", "product")
-
     user = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="basket"
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='basket',
     )
-    product = models.ForeignKey(Product, on_delete=models.CASCADE)
-    quantity = models.PositiveIntegerField(verbose_name="количество", default=0)
-    add_datetime = models.DateTimeField(verbose_name="время", auto_now_add=True)
+    product = models.ForeignKey(
+        Product,
+        on_delete=models.CASCADE,
+    )
+    quantity = models.PositiveIntegerField(verbose_name='количество', default=0)
 
-    objects = BasketManager()
+    add_datetime = models.DateTimeField(verbose_name='время', auto_now_add=True)
 
     @property
-    def cost(self):
+    def product_cost(self):
         return self.product.price * self.quantity
 
-    def __str__(self):
-        return f"{self.product.name} - {self.quantity} шт"
+    @property
+    def total_quantity(self):
+        _items = Basket.objects.filter(user=self.user)
+        _total_quantity = sum(list(map(lambda x: x.quantity, _items)))
+        return _total_quantity
+
+    @property
+    def total_cost(self):
+        _items = Basket.objects.filter(user=self.user)
+        _total_cost = sum(list(map(lambda x: x.product_cost, _items)))
+        return _total_cost
