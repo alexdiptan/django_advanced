@@ -48,7 +48,6 @@ INSTALLED_APPS = [
     'debug_toolbar',
     'template_profiler_panel',
 
-
     'mainapp',
     'authapp',
     'basketapp',
@@ -56,7 +55,7 @@ INSTALLED_APPS = [
     'ordersapp',
 
     'social_django',
-
+    'django_extensions'
 ]
 
 AUTHENTICATION_BACKENDS = (
@@ -78,7 +77,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'social_django.middleware.SocialAuthExceptionMiddleware',
     'debug_toolbar.middleware.DebugToolbarMiddleware',
-
+    'django.middleware.cache.FetchFromCacheMiddleware'
 ]
 
 ROOT_URLCONF = 'geekshop.urls'
@@ -209,7 +208,6 @@ EMAIL_PORT = '2525'
 # EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
 # EMAIL_FILE_PATH = 'tmp/email-messages/'
 
-
 if DEBUG:
     def show_toolbar(request):
         return True
@@ -233,4 +231,19 @@ if DEBUG:
         'debug_toolbar.panels.redirects.RedirectsPanel',
         'debug_toolbar.panels.profiling.ProfilingPanel',
         'template_profiler_panel.panels.template.TemplateProfilerPanel',
+    ]
 
+if os.name == 'posix':
+    CACHE_MIDDLEWARE_ALIAS = 'default'
+    CACHE_MIDDLEWARE_SECONDS = 10
+    CACHE_MIDDLEWARE_KEY_PREFIX = 'geekshop'
+
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
+            'LOCATION': '127.0.0.1:11211',
+            'TIMEOUT': 10
+        }
+    }
+
+LOW_CACHE = True

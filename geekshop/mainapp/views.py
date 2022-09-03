@@ -9,6 +9,32 @@ from mainapp.models import ProductCategory, Product
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 
+def get_links_menu():
+    if settings.LOW_CACHE:
+        key = 'links_menu'
+        links_menu = cache.get(key)
+        if links_menu is None:
+            links_menu = ProductCategory.objects.filter(is_active=True)
+            cache.set(key, links_menu)
+        return links_menu
+    else:
+        return ProductCategory.objects.filter(is_active=True)
+
+
+def get_products():
+    if settings.LOW_CACHE:
+        key = 'products'
+        products = cache.get(key)
+        if products is None:
+            products = Product.objects.filter(is_active=True, category__is_active=True).select_related(
+                'category').order_by('price')
+            cache.set(key, products)
+        return products
+    else:
+        return Product.objects.filter(is_active=True, category__is_active=True).select_related('category').order_by(
+            'price')
+
+
 def get_hot_product():
     products = get_products()
 
@@ -27,7 +53,7 @@ def products(request, pk=None, page=1):
     links_menu = get_links_menu()
     hot_product = get_hot_product()
     same_products = get_same_products(hot_product)
-
+    products = get_products()
 
     if pk is not None:
         if pk == 0:
